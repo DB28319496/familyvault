@@ -23,8 +23,8 @@
   --color-coral: var(--coral);
   --color-coral-light: var(--coral-light);
 
-  /* Fixed — do not change with mode */
-  --color-sidebar: #1B2A3D;
+  /* Sidebar + primary — adaptive */
+  --color-sidebar: var(--sidebar);
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
 
@@ -54,6 +54,7 @@
   --coral: #B85450;
   --coral-light: #CF6E6A;
 
+  --sidebar: #1B2A3D;
   --primary: #344E6A;
   --primary-hover: #456282;
 }
@@ -80,6 +81,7 @@
   --coral: #D8807A;
   --coral-light: #E8A09A;
 
+  --sidebar: #141413;
   --primary: #456282;
   --primary-hover: #5A7A9A;
 }
