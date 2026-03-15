@@ -45,7 +45,7 @@ export function MobileHeader() {
 
   return (
     <>
-      <header className="lg:hidden flex items-center justify-between px-4 py-3 bg-card border-b border-border sticky top-0 z-40">
+      <header className="lg:hidden flex items-center justify-between px-4 py-3 bg-card border-b border-border sticky top-0 z-40 safe-area-pt">
         <div className="flex items-center gap-2">
           <Shield className="w-6 h-6 text-navy" />
           <span className="font-bold text-foreground">FamilyVault</span>

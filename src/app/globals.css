@@ -111,6 +111,16 @@ body {
   background: var(--muted-fg);
 }
 
+/* Safe areas — iOS home indicator + notch */
+@supports (padding: env(safe-area-inset-top)) {
+  .safe-area-pt {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  .safe-area-pb {
+    padding-bottom: env(safe-area-inset-bottom, 8px);
+  }
+}
+
 /* Phase colors — mid-tone for both modes */
 .phase-1 { --phase-color: #B85450; }
 .phase-2 { --phase-color: #B8922E; }
