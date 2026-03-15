@@ -153,7 +153,7 @@ export default function BinderPage() {
   const [activeTab, setActiveTab] = useState<TabId>("contacts");
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 overflow-x-hidden">
       {/* Page header */}
       <div>
         <h1 className="text-2xl font-bold text-foreground">
