@@ -8,10 +8,6 @@ import {
   Menu,
   X,
   LayoutDashboard,
-  CreditCard,
-  TrendingUp,
-  Wallet,
-  Baby,
   FolderLock,
   ListChecks,
   GraduationCap,
@@ -26,10 +22,6 @@ import { useTheme } from "@/lib/theme-provider";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/debt", label: "Debt Payoff", icon: CreditCard },
-  { href: "/net-worth", label: "Net Worth", icon: TrendingUp },
-  { href: "/budget", label: "Budget", icon: Wallet },
-  { href: "/baby", label: "Baby Expenses", icon: Baby },
   { href: "/binder", label: "Emergency Binder", icon: FolderLock },
   { href: "/action-plan", label: "Action Plan", icon: ListChecks },
   { href: "/529", label: "529 Calculator", icon: GraduationCap },

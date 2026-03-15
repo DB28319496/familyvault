@@ -2,12 +2,7 @@
 
 import Link from "next/link";
 import {
-  TrendingUp,
-  TrendingDown,
-  CreditCard,
   Shield,
-  Wallet,
-  Baby,
   FolderLock,
   ListChecks,
   GraduationCap,
@@ -15,38 +10,41 @@ import {
   ArrowRight,
   AlertTriangle,
   CheckCircle2,
+  FileText,
+  Users,
+  KeyRound,
+  Receipt,
 } from "lucide-react";
 import { Card, CardTitle } from "@/components/ui/card";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { formatCurrency, getPhaseColor, getPhaseLabel } from "@/lib/utils";
 import {
-  useDebts,
-  useNetWorthSnapshots,
   useActionItems,
   useLegalDocuments,
   useInsurancePolicies,
+  useContacts,
+  useFinancialAccounts,
+  useMonthlyBills,
+  useDigitalAccess,
 } from "@/lib/hooks/use-data";
-import {
-  calculateAvalanchePayoff,
-  calculateFinancialHealthScore,
-  getCurrentPhase,
-} from "@/lib/calculations";
 
 export default function DashboardPage() {
-  const { data: debts, loading: debtsLoading } = useDebts();
-  const { data: snapshots, loading: snapshotsLoading } = useNetWorthSnapshots();
   const { data: actionItems, loading: actionsLoading } = useActionItems();
   const { data: legalDocs, loading: docsLoading } = useLegalDocuments();
   const { data: insurancePolicies, loading: insuranceLoading } = useInsurancePolicies();
+  const { data: contacts, loading: contactsLoading } = useContacts();
+  const { data: accounts, loading: accountsLoading } = useFinancialAccounts();
+  const { data: bills, loading: billsLoading } = useMonthlyBills();
+  const { data: digitalAccess, loading: digitalLoading } = useDigitalAccess();
 
-  const isLoading = debtsLoading || snapshotsLoading || actionsLoading || docsLoading || insuranceLoading;
+  const isLoading = actionsLoading || docsLoading || insuranceLoading || contactsLoading || accountsLoading || billsLoading || digitalLoading;
 
   if (isLoading) {
     return (
       <div className="space-y-6 max-w-7xl mx-auto">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-          <p className="text-muted-foreground text-sm mt-1">Your family&apos;s financial overview</p>
+          <p className="text-muted-foreground text-sm mt-1">Your family&apos;s protection at a glance</p>
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
@@ -59,74 +57,44 @@ export default function DashboardPage() {
             </Card>
           ))}
         </div>
-        <div className="grid lg:grid-cols-2 gap-6">
-          {[...Array(2)].map((_, i) => (
-            <Card key={i}>
-              <div className="animate-pulse space-y-3">
-                <div className="h-4 bg-surface-hover rounded w-40" />
-                <div className="h-3 bg-surface-hover rounded w-full" />
-                <div className="h-3 bg-surface-hover rounded w-3/4" />
-                <div className="h-3 bg-surface-hover rounded w-full" />
-                <div className="h-3 bg-surface-hover rounded w-1/2" />
-              </div>
-            </Card>
-          ))}
-        </div>
       </div>
     );
   }
 
-  const latestSnapshot = snapshots[snapshots.length - 1];
-  const prevSnapshot = snapshots[snapshots.length - 2];
-
-  const totalDebt = debts.reduce((s, d) => s + d.balance, 0);
-  const monthlyExtra = 1800 - debts.reduce((s, d) => s + d.min_payment, 0);
-  const avalanche = calculateAvalanchePayoff(debts, Math.max(0, monthlyExtra));
-
-  const emergencyFund = 10000;
-  const emergencyFundTarget = 60000;
-  const efPercent = (emergencyFund / emergencyFundTarget) * 100;
-
-  const monthlyIncome = 10000;
-  const monthlySavings = 750 + 1167; // EF + Roths (simplified)
-  const savingsRate = monthlySavings / monthlyIncome;
-
-  const netWorthChange = latestSnapshot && prevSnapshot
-    ? latestSnapshot.net_worth - prevSnapshot.net_worth
-    : 0;
-
+  // Binder completion metrics
   const completedDocs = legalDocs.filter((d) => d.status === "complete").length;
-  const estateCompletion = completedDocs / legalDocs.length;
+  const totalDocs = legalDocs.length;
+  const docsPercent = totalDocs > 0 ? Math.round((completedDocs / totalDocs) * 100) : 0;
 
-  const hasSupplementalLife = insurancePolicies.some(
-    (p) => p.policy_type.includes("Supplemental") && p.carrier
-  );
+  const filledContacts = contacts.filter((c) => c.name && c.name.trim() !== "").length;
+  const totalContacts = contacts.length;
 
-  const currentPhase = getCurrentPhase({
-    hasLifeInsurance: hasSupplementalLife,
-    hasPasswordManager: true,
-    hasEstateDocuments: estateCompletion > 0.5,
-    debtBalance: totalDebt,
-    emergencyFund,
-    emergencyFundTarget,
-  });
+  const totalAccounts = accounts.length;
+  const totalBills = bills.length;
+  const digitalItems = digitalAccess.length;
 
-  const healthScore = calculateFinancialHealthScore({
-    debtRatio: totalDebt / 150000,
-    savingsRate,
-    emergencyFundRatio: emergencyFund / emergencyFundTarget,
-    insuranceCoverage: 150000 / 2750000,
-    estatePlanComplete: estateCompletion,
-  });
+  // Insurance coverage
+  const lifeCoverage = insurancePolicies
+    .filter((p) => p.policy_type.toLowerCase().includes("life"))
+    .reduce((s, p) => s + (p.coverage_amount ?? 0), 0);
+  const recommendedCoverage = 2750000;
+  const coveragePercent = Math.min(100, Math.round((lifeCoverage / recommendedCoverage) * 100));
+  const hasAdequateInsurance = coveragePercent >= 80;
 
+  // Action plan progress
   const completedActions = actionItems.filter((a) => a.status === "complete").length;
   const totalActions = actionItems.length;
+  const actionsPercent = totalActions > 0 ? Math.round((completedActions / totalActions) * 100) : 0;
+
+  // Overall readiness score (weighted)
+  const readinessScore = Math.round(
+    (docsPercent * 0.3) +
+    (coveragePercent * 0.3) +
+    ((filledContacts / Math.max(totalContacts, 1)) * 100 * 0.2) +
+    (actionsPercent * 0.2)
+  );
 
   const quickLinks = [
-    { href: "/debt", label: "Debt Tracker", icon: CreditCard, color: "text-coral" },
-    { href: "/net-worth", label: "Net Worth", icon: TrendingUp, color: "text-teal" },
-    { href: "/budget", label: "Budget", icon: Wallet, color: "text-amber" },
-    { href: "/baby", label: "Baby Expenses", icon: Baby, color: "text-navy-light" },
     { href: "/binder", label: "Emergency Binder", icon: FolderLock, color: "text-navy" },
     { href: "/action-plan", label: "Action Plan", icon: ListChecks, color: "text-teal" },
     { href: "/529", label: "529 Calculator", icon: GraduationCap, color: "text-navy-light" },
@@ -138,87 +106,88 @@ export default function DashboardPage() {
       {/* Page header */}
       <div>
         <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground text-sm mt-1">Your family&apos;s financial overview</p>
+        <p className="text-muted-foreground text-sm mt-1">Your family&apos;s protection at a glance</p>
       </div>
 
-      {/* Phase indicator */}
-      <Card className="border-l-4" style={{ borderLeftColor: getPhaseColor(currentPhase) }}>
+      {/* Readiness Score */}
+      <Card className="border-l-4" style={{ borderLeftColor: readinessScore >= 70 ? "#1D9E75" : readinessScore >= 40 ? "#EF9F27" : "#E24B4A" }}>
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: getPhaseColor(currentPhase) }}>
-              Phase {currentPhase}
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Family Protection Readiness
             </p>
-            <p className="text-lg font-bold text-foreground">{getPhaseLabel(currentPhase)}</p>
+            <div className="flex items-center gap-3 mt-1">
+              <Shield className={`w-8 h-8 ${readinessScore >= 70 ? "text-teal" : readinessScore >= 40 ? "text-amber" : "text-coral"}`} />
+              <p className={`text-3xl font-bold ${readinessScore >= 70 ? "text-teal" : readinessScore >= 40 ? "text-amber" : "text-coral"}`}>
+                {readinessScore}%
+              </p>
+            </div>
           </div>
           <Link href="/action-plan" className="text-sm text-navy hover:underline flex items-center gap-1">
             View Plan <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
+        <ProgressBar
+          value={readinessScore}
+          color={readinessScore >= 70 ? "bg-teal" : readinessScore >= 40 ? "bg-amber" : "bg-coral"}
+          className="mt-3"
+          size="lg"
+        />
       </Card>
 
       {/* Top metrics */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Net Worth */}
         <Card>
-          <CardTitle>Net Worth</CardTitle>
-          <p className="text-2xl font-bold text-foreground mt-2">
-            {formatCurrency(latestSnapshot?.net_worth ?? 0)}
-          </p>
-          <div className="flex items-center gap-1 mt-1">
-            {netWorthChange >= 0 ? (
-              <TrendingUp className="w-4 h-4 text-teal" />
-            ) : (
-              <TrendingDown className="w-4 h-4 text-coral" />
-            )}
-            <span className={`text-sm font-medium ${netWorthChange >= 0 ? "text-teal" : "text-coral"}`}>
-              {netWorthChange >= 0 ? "+" : ""}{formatCurrency(netWorthChange)}
-            </span>
-            <span className="text-xs text-muted-foreground">this month</span>
-          </div>
-        </Card>
-
-        {/* Debt */}
-        <Card>
-          <CardTitle>Total Debt</CardTitle>
-          <p className="text-2xl font-bold text-coral mt-2">{formatCurrency(totalDebt)}</p>
-          <p className="text-sm text-muted-foreground mt-1">
-            Free by {avalanche.debtFreeDate.toLocaleDateString("en-US", { month: "short", year: "numeric" })}
-          </p>
-        </Card>
-
-        {/* Emergency Fund */}
-        <Card>
-          <CardTitle>Emergency Fund</CardTitle>
-          <p className="text-2xl font-bold text-foreground mt-2">{formatCurrency(emergencyFund)}</p>
-          <ProgressBar value={efPercent} color="bg-amber" className="mt-2" />
+          <CardTitle>Legal Documents</CardTitle>
+          <p className="text-2xl font-bold text-foreground mt-2">{completedDocs}/{totalDocs}</p>
+          <ProgressBar value={docsPercent} color={docsPercent >= 80 ? "bg-teal" : "bg-amber"} className="mt-2" size="sm" />
           <p className="text-xs text-muted-foreground mt-1">
-            {Math.round(efPercent)}% of {formatCurrency(emergencyFundTarget)}
+            {docsPercent >= 100 ? "All complete" : `${docsPercent}% complete`}
           </p>
         </Card>
 
-        {/* Health Score */}
         <Card>
-          <CardTitle>Health Score</CardTitle>
-          <p className={`text-2xl font-bold mt-2 ${healthScore >= 60 ? "text-teal" : healthScore >= 40 ? "text-amber" : "text-coral"}`}>
-            {healthScore}/100
+          <CardTitle>Insurance Coverage</CardTitle>
+          <p className={`text-2xl font-bold mt-2 ${hasAdequateInsurance ? "text-teal" : "text-coral"}`}>
+            {coveragePercent}%
           </p>
+          <ProgressBar value={coveragePercent} color={hasAdequateInsurance ? "bg-teal" : "bg-coral"} className="mt-2" size="sm" />
+          <p className="text-xs text-muted-foreground mt-1">
+            {formatCurrency(lifeCoverage)} of {formatCurrency(recommendedCoverage)}
+          </p>
+        </Card>
+
+        <Card>
+          <CardTitle>Emergency Contacts</CardTitle>
+          <p className="text-2xl font-bold text-foreground mt-2">{filledContacts}/{totalContacts}</p>
           <ProgressBar
-            value={healthScore}
-            color={healthScore >= 60 ? "bg-teal" : healthScore >= 40 ? "bg-amber" : "bg-coral"}
+            value={totalContacts > 0 ? (filledContacts / totalContacts) * 100 : 0}
+            color="bg-navy"
             className="mt-2"
+            size="sm"
           />
+          <p className="text-xs text-muted-foreground mt-1">contacts filled in</p>
+        </Card>
+
+        <Card>
+          <CardTitle>Action Plan</CardTitle>
+          <p className="text-2xl font-bold text-foreground mt-2">{completedActions}/{totalActions}</p>
+          <ProgressBar value={actionsPercent} color="bg-teal" className="mt-2" size="sm" />
+          <p className="text-xs text-muted-foreground mt-1">{actionsPercent}% complete</p>
         </Card>
       </div>
 
       {/* Alerts */}
       <div className="space-y-3">
-        {!hasSupplementalLife && (
+        {!hasAdequateInsurance && (
           <div className="flex items-start gap-3 bg-coral/10 border border-coral/20 rounded-lg p-4">
             <AlertTriangle className="w-5 h-5 text-coral shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-semibold text-coral">Life Insurance Gap: {formatCurrency(2600000)}</p>
+              <p className="text-sm font-semibold text-coral">
+                Life Insurance Gap: {formatCurrency(recommendedCoverage - lifeCoverage)}
+              </p>
               <p className="text-xs text-coral/80 mt-0.5">
-                Current coverage: {formatCurrency(150000)} (Tesla employer only). Recommended: ~{formatCurrency(2750000)}.
+                Current: {formatCurrency(lifeCoverage)}. Recommended: {formatCurrency(recommendedCoverage)}.
               </p>
               <Link href="/insurance" className="text-xs text-coral font-medium hover:underline mt-1 inline-block">
                 View Insurance Analysis →
@@ -227,13 +196,13 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {estateCompletion < 0.5 && (
+        {docsPercent < 50 && (
           <div className="flex items-start gap-3 bg-amber/10 border border-amber/20 rounded-lg p-4">
             <AlertTriangle className="w-5 h-5 text-amber shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-semibold text-amber">Estate Plan Incomplete</p>
               <p className="text-xs text-amber/80 mt-0.5">
-                {completedDocs}/{legalDocs.length} documents complete. Will, trust, and POA still needed.
+                {completedDocs}/{totalDocs} documents complete. Will, trust, and POA still needed.
               </p>
               <Link href="/binder" className="text-xs text-amber font-medium hover:underline mt-1 inline-block">
                 Open Emergency Binder →
@@ -243,35 +212,53 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* Cash Flow Summary + Action Items */}
+      {/* Binder Summary + Next Steps */}
       <div className="grid lg:grid-cols-2 gap-6">
-        {/* Cash Flow */}
+        {/* Binder Summary */}
         <Card>
-          <CardTitle>Monthly Cash Flow</CardTitle>
-          <div className="space-y-3 mt-4">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-foreground">Take-home Income</span>
-              <span className="text-sm font-semibold text-teal">{formatCurrency(monthlyIncome)}</span>
+          <div className="flex items-center justify-between mb-4">
+            <CardTitle>Emergency Binder Status</CardTitle>
+            <Link href="/binder" className="text-xs text-navy hover:underline">
+              Open Binder
+            </Link>
+          </div>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between py-2">
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm text-foreground">Contacts</span>
+              </div>
+              <span className="text-sm font-medium text-foreground">{filledContacts} filled</span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-foreground">Fixed Expenses</span>
-              <span className="text-sm font-semibold text-foreground">-{formatCurrency(5610)}</span>
+            <div className="flex items-center justify-between py-2">
+              <div className="flex items-center gap-2">
+                <FileText className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm text-foreground">Legal Documents</span>
+              </div>
+              <span className={`text-sm font-medium ${docsPercent >= 80 ? "text-teal" : "text-amber"}`}>
+                {completedDocs}/{totalDocs} complete
+              </span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-foreground">Debt Payoff</span>
-              <span className="text-sm font-semibold text-coral">-{formatCurrency(1800)}</span>
+            <div className="flex items-center justify-between py-2">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm text-foreground">Insurance Policies</span>
+              </div>
+              <span className="text-sm font-medium text-foreground">{insurancePolicies.length} tracked</span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-foreground">Savings & Investing</span>
-              <span className="text-sm font-semibold text-teal">-{formatCurrency(1917)}</span>
+            <div className="flex items-center justify-between py-2">
+              <div className="flex items-center gap-2">
+                <Receipt className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm text-foreground">Monthly Bills</span>
+              </div>
+              <span className="text-sm font-medium text-foreground">{totalBills} tracked</span>
             </div>
-            <div className="border-t border-border pt-3 flex justify-between items-center">
-              <span className="text-sm font-semibold text-foreground">Remaining</span>
-              <span className="text-sm font-bold text-foreground">{formatCurrency(673)}</span>
-            </div>
-            <div className="flex items-center gap-2 mt-2">
-              <span className="text-xs text-muted-foreground">Savings Rate:</span>
-              <span className="text-xs font-bold text-teal">{(savingsRate * 100).toFixed(1)}%</span>
+            <div className="flex items-center justify-between py-2">
+              <div className="flex items-center gap-2">
+                <KeyRound className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm text-foreground">Digital Access</span>
+              </div>
+              <span className="text-sm font-medium text-foreground">{digitalItems} items</span>
             </div>
           </div>
         </Card>
@@ -304,6 +291,12 @@ export default function DashboardPage() {
                   </div>
                 </div>
               ))}
+            {actionItems.filter((a) => a.status !== "complete").length === 0 && (
+              <div className="flex items-center gap-2 py-4 text-teal">
+                <CheckCircle2 className="w-5 h-5" />
+                <span className="text-sm font-medium">All tasks complete!</span>
+              </div>
+            )}
           </div>
           <div className="mt-4 pt-3 border-t border-border">
             <div className="flex items-center gap-2">
@@ -313,7 +306,7 @@ export default function DashboardPage() {
               </span>
             </div>
             <ProgressBar
-              value={(completedActions / totalActions) * 100}
+              value={actionsPercent}
               color="bg-teal"
               size="sm"
               className="mt-2"

@@ -4,19 +4,19 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
-  CreditCard,
-  Wallet,
   FolderLock,
   ListChecks,
+  ShieldCheck,
+  GraduationCap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const mobileNavItems = [
   { href: "/dashboard", label: "Home", icon: LayoutDashboard },
-  { href: "/debt", label: "Debt", icon: CreditCard },
-  { href: "/budget", label: "Budget", icon: Wallet },
   { href: "/binder", label: "Binder", icon: FolderLock },
   { href: "/action-plan", label: "Plan", icon: ListChecks },
+  { href: "/insurance", label: "Insurance", icon: ShieldCheck },
+  { href: "/529", label: "529", icon: GraduationCap },
 ];
 
 export function MobileNav() {
