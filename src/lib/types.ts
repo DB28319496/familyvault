@@ -5,6 +5,25 @@ export interface Profile {
   display_name: string | null;
   household_income: number | null;
   monthly_take_home: number | null;
+  household_id: string | null;
+  created_at: string;
+}
+
+export interface Household {
+  id: string;
+  name: string;
+  created_by: string;
+  created_at: string;
+}
+
+export interface HouseholdInvite {
+  id: string;
+  household_id: string;
+  email: string;
+  invited_by: string;
+  token: string;
+  accepted_at: string | null;
+  expires_at: string;
   created_at: string;
 }
 

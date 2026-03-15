@@ -16,6 +16,7 @@ import {
   ListChecks,
   GraduationCap,
   ShieldCheck,
+  Settings,
   Moon,
   Sun,
   LogOut,
@@ -33,6 +34,7 @@ const navItems = [
   { href: "/action-plan", label: "Action Plan", icon: ListChecks },
   { href: "/529", label: "529 Calculator", icon: GraduationCap },
   { href: "/insurance", label: "Insurance Gap", icon: ShieldCheck },
+  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 export function MobileHeader() {

@@ -15,6 +15,8 @@ import type {
   DigitalAccess,
   LetterOfIntent,
   ActionItem,
+  Household,
+  HouseholdInvite,
 } from "@/lib/types";
 
 // Generic hook for any table
@@ -49,9 +51,15 @@ function useSupabaseTable<T>(
   const insert = async (item: Partial<T>) => {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
+    // Get household_id from profile
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("household_id")
+      .eq("id", user?.id)
+      .single();
     const { data: row, error } = await supabase
       .from(table)
-      .insert({ ...item, user_id: user?.id })
+      .insert({ ...item, user_id: user?.id, household_id: profile?.household_id })
       .select()
       .single();
     if (error) throw error;
@@ -170,9 +178,14 @@ export function useLetterOfIntent() {
         .update({ content, last_updated: now })
         .eq("id", data.id);
     } else {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("household_id")
+        .eq("id", user?.id)
+        .single();
       const { data: row } = await supabase
         .from("letter_of_intent")
-        .insert({ user_id: user?.id, content, last_updated: now })
+        .insert({ user_id: user?.id, household_id: profile?.household_id, content, last_updated: now })
         .select()
         .single();
       setData(row as LetterOfIntent);
@@ -188,6 +201,97 @@ export function useActionItems() {
     column: "sort_order",
     ascending: true,
   });
+}
+
+// Household hook
+export function useHousehold() {
+  const [household, setHousehold] = useState<Household | null>(null);
+  const [invites, setInvites] = useState<HouseholdInvite[]>([]);
+  const [members, setMembers] = useState<{ id: string; display_name: string | null; email: string | null }[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchHousehold = useCallback(async () => {
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Get profile with household_id
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("household_id")
+        .eq("id", user.id)
+        .single();
+
+      if (!profile?.household_id) return;
+
+      // Get household
+      const { data: hh } = await supabase
+        .from("households")
+        .select("*")
+        .eq("id", profile.household_id)
+        .single();
+      setHousehold(hh as Household | null);
+
+      // Get household members
+      const { data: memberProfiles } = await supabase
+        .from("profiles")
+        .select("id, display_name")
+        .eq("household_id", profile.household_id);
+      setMembers((memberProfiles || []).map((m) => ({ ...m, email: null })));
+
+      // Get pending invites
+      const { data: inv } = await supabase
+        .from("household_invites")
+        .select("*")
+        .eq("household_id", profile.household_id)
+        .is("accepted_at", null);
+      setInvites((inv as HouseholdInvite[]) || []);
+    } catch (err) {
+      console.error("Error fetching household:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchHousehold();
+  }, [fetchHousehold]);
+
+  const sendInvite = async (email: string) => {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("household_id")
+      .eq("id", user?.id)
+      .single();
+
+    const { data: invite, error } = await supabase
+      .from("household_invites")
+      .insert({
+        household_id: profile?.household_id,
+        email,
+        invited_by: user?.id,
+      })
+      .select()
+      .single();
+    if (error) throw error;
+    setInvites((prev) => [...prev, invite as HouseholdInvite]);
+    return invite as HouseholdInvite;
+  };
+
+  const revokeInvite = async (inviteId: string) => {
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("household_invites")
+      .delete()
+      .eq("id", inviteId);
+    if (error) throw error;
+    setInvites((prev) => prev.filter((i) => i.id !== inviteId));
+  };
+
+  return { household, members, invites, loading, sendInvite, revokeInvite, refetch: fetchHousehold };
 }
 
 // Profile hook
