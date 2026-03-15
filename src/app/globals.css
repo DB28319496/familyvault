@@ -3,16 +3,6 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-navy: #1A365D;
-  --color-navy-light: #2C5282;
-  --color-navy-dark: #102A43;
-  --color-slate-blue: #2C5282;
-  --color-teal: #1D9E75;
-  --color-teal-light: #2DD4A0;
-  --color-amber: #EF9F27;
-  --color-amber-light: #FCD34D;
-  --color-coral: #E24B4A;
-  --color-coral-light: #F87171;
   --color-surface: var(--surface);
   --color-surface-hover: var(--surface-hover);
   --color-border: var(--border-color);
@@ -20,32 +10,78 @@
   --color-muted-foreground: var(--muted-fg);
   --color-card: var(--card-bg);
   --color-card-foreground: var(--card-fg);
+
+  /* Brand colors — adaptive to light/dark */
+  --color-navy: var(--navy);
+  --color-navy-light: var(--navy-light);
+  --color-navy-dark: var(--navy-dark);
+  --color-slate-blue: var(--navy-light);
+  --color-teal: var(--teal);
+  --color-teal-light: var(--teal-light);
+  --color-amber: var(--amber);
+  --color-amber-light: var(--amber-light);
+  --color-coral: var(--coral);
+  --color-coral-light: var(--coral-light);
+
+  /* Fixed — do not change with mode */
+  --color-sidebar: #1B2A3D;
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
+/* ── Light mode ───────────────────────────── */
 :root {
-  --background: #F8FAFC;
-  --foreground: #1A202C;
+  --background: #FAF9F7;
+  --foreground: #1C1917;
   --surface: #FFFFFF;
-  --surface-hover: #F1F5F9;
-  --border-color: #E2E8F0;
-  --muted-color: #94A3B8;
-  --muted-fg: #64748B;
+  --surface-hover: #F5F3EF;
+  --border-color: #E7E5E0;
+  --muted-color: #ADA99F;
+  --muted-fg: #6B6860;
   --card-bg: #FFFFFF;
-  --card-fg: #1A202C;
+  --card-fg: #1C1917;
+
+  --navy: #344E6A;
+  --navy-light: #456282;
+  --navy-dark: #1B2A3D;
+  --teal: #3B7D62;
+  --teal-light: #4E9E7E;
+  --amber: #B8922E;
+  --amber-light: #D0AB48;
+  --coral: #B85450;
+  --coral-light: #CF6E6A;
+
+  --primary: #344E6A;
+  --primary-hover: #456282;
 }
 
+/* ── Dark mode ────────────────────────────── */
 .dark {
-  --background: #0F172A;
-  --foreground: #F1F5F9;
-  --surface: #1E293B;
-  --surface-hover: #334155;
-  --border-color: #334155;
-  --muted-color: #475569;
-  --muted-fg: #94A3B8;
-  --card-bg: #1E293B;
-  --card-fg: #F1F5F9;
+  --background: #0E0E0D;
+  --foreground: #E8E6E3;
+  --surface: #1A1918;
+  --surface-hover: #262524;
+  --border-color: #2C2B29;
+  --muted-color: #555350;
+  --muted-fg: #9C9A95;
+  --card-bg: #1A1918;
+  --card-fg: #E8E6E3;
+
+  --navy: #8AAAC6;
+  --navy-light: #A0BDD6;
+  --navy-dark: #6B8DAD;
+  --teal: #5EAA8A;
+  --teal-light: #7CC4A4;
+  --amber: #D4B45A;
+  --amber-light: #E2C874;
+  --coral: #D8807A;
+  --coral-light: #E8A09A;
+
+  --primary: #456282;
+  --primary-hover: #5A7A9A;
 }
 
 body {
@@ -73,8 +109,8 @@ body {
   background: var(--muted-fg);
 }
 
-/* Phase colors */
-.phase-1 { --phase-color: #E24B4A; }
-.phase-2 { --phase-color: #EF9F27; }
-.phase-3 { --phase-color: #1D9E75; }
-.phase-4 { --phase-color: #2C5282; }
+/* Phase colors — mid-tone for both modes */
+.phase-1 { --phase-color: #B85450; }
+.phase-2 { --phase-color: #B8922E; }
+.phase-3 { --phase-color: #3B7D62; }
+.phase-4 { --phase-color: #456282; }

@@ -44,11 +44,11 @@ export function formatMonthYear(date: Date | string): string {
 
 export function getPhaseColor(phase: number): string {
   switch (phase) {
-    case 1: return "#E24B4A";
-    case 2: return "#EF9F27";
-    case 3: return "#1D9E75";
-    case 4: return "#2C5282";
-    default: return "#94A3B8";
+    case 1: return "#B85450";
+    case 2: return "#B8922E";
+    case 3: return "#3B7D62";
+    case 4: return "#456282";
+    default: return "#9C9A95";
   }
 }
 

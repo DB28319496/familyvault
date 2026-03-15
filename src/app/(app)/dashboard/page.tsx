@@ -112,7 +112,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Readiness Score */}
-      <Card className="border-l-4" style={{ borderLeftColor: readinessScore >= 70 ? "#1D9E75" : readinessScore >= 40 ? "#EF9F27" : "#E24B4A" }}>
+      <Card className="border-l-4" style={{ borderLeftColor: readinessScore >= 70 ? "#3B7D62" : readinessScore >= 40 ? "#B8922E" : "#B85450" }}>
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">

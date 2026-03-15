@@ -1,9 +1,17 @@
 import Link from "next/link";
-import { Shield, TrendingUp, Baby, FileText, Target, ArrowRight } from "lucide-react";
+import {
+  Shield,
+  FolderLock,
+  FileText,
+  ListChecks,
+  ShieldCheck,
+  GraduationCap,
+  ArrowRight,
+} from "lucide-react";
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-navy text-white">
+    <div className="min-h-screen bg-sidebar text-white">
       {/* Header */}
       <header className="flex items-center justify-between px-6 py-4 max-w-6xl mx-auto">
         <div className="flex items-center gap-2">
@@ -34,9 +42,9 @@ export default function LandingPage() {
           <span className="text-teal">Build Your Legacy.</span>
         </h1>
         <p className="text-lg md:text-xl text-white/70 max-w-2xl mx-auto mb-10">
-          Your family&apos;s single source of truth for financial health, estate planning,
-          and legacy management. Track debt payoff, build your emergency binder,
-          and plan for every milestone.
+          Your family&apos;s single source of truth for estate planning,
+          insurance coverage, and emergency preparedness. Everything your
+          loved ones need, organized and secure.
         </p>
         <Link
           href="/signup"
@@ -52,34 +60,34 @@ export default function LandingPage() {
         <div className="grid md:grid-cols-3 gap-8">
           {[
             {
-              icon: TrendingUp,
-              title: "Debt Payoff & Net Worth",
-              desc: "Track every dollar. Avalanche method visualization, projected debt-free date, and net worth growth over time.",
+              icon: FolderLock,
+              title: "Digital Emergency Binder",
+              desc: "Contacts, legal documents, financial accounts, insurance policies, bills, and digital access — everything organized in one place.",
+            },
+            {
+              icon: ListChecks,
+              title: "Action Plan",
+              desc: "A step-by-step roadmap for protecting your family. Track progress through each phase, from estate documents to long-term planning.",
+            },
+            {
+              icon: ShieldCheck,
+              title: "Insurance Gap Analysis",
+              desc: "Know exactly how much coverage your family needs. Identify gaps and get clear recommendations.",
+            },
+            {
+              icon: GraduationCap,
+              title: "529 College Calculator",
+              desc: "Project your college savings growth with tax-free compound interest. See coverage across university tiers.",
             },
             {
               icon: FileText,
-              title: "Digital Emergency Binder",
-              desc: "Contacts, legal documents, financial accounts, insurance policies — everything your family needs, organized and secure.",
-            },
-            {
-              icon: Target,
-              title: "Action Plan Timeline",
-              desc: "Phase-by-phase financial roadmap from debt elimination to wealth building, with progress tracking at every step.",
+              title: "Letter of Intent",
+              desc: "Write a personal letter with your wishes, values, and guidance for your family. The most important document you\u2019ll ever create.",
             },
             {
               icon: Shield,
-              title: "Insurance Gap Analysis",
-              desc: "Know exactly how much coverage you need. Calculate gaps and get recommendations for your family's situation.",
-            },
-            {
-              icon: Baby,
-              title: "Baby Expense Tracker",
-              desc: "Dedicated tracking for all baby-related costs. Categories, trends, and comparison to national averages.",
-            },
-            {
-              icon: TrendingUp,
-              title: "529 College Calculator",
-              desc: "Project your college savings growth with tax-free compound interest. See coverage across university tiers.",
+              title: "Shared Household Access",
+              desc: "Both spouses see the same data. Invite your partner so either of you can find what you need, when you need it.",
             },
           ].map((feature) => (
             <div

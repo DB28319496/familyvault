@@ -50,31 +50,31 @@ export default function InsurancePage() {
       label: "Income Replacement",
       amount: recommended.incomeReplacement,
       description: `${yearsUntilChildIndependent} years x ${formatCurrency(annualSalary)}/yr`,
-      color: "#1A365D",
+      color: "#344E6A",
     },
     {
       label: "College Funding",
       amount: recommended.collegeFunding,
       description: `${numberOfChildren} child${numberOfChildren > 1 ? "ren" : ""} x ${formatCurrency(250000)}`,
-      color: "#2C5282",
+      color: "#456282",
     },
     {
       label: "Emergency Fund",
       amount: recommended.emergencyFund,
       description: `12 months x ${formatCurrency(monthlyExpenses)}/mo`,
-      color: "#1D9E75",
+      color: "#3B7D62",
     },
     {
       label: "Debt Payoff",
       amount: recommended.debtPayoff,
       description: "Credit card balances",
-      color: "#EF9F27",
+      color: "#B8922E",
     },
     {
       label: "Final Expenses",
       amount: recommended.funeralCosts,
       description: "Funeral, burial, and related costs",
-      color: "#E24B4A",
+      color: "#B85450",
     },
   ];
 
@@ -155,7 +155,7 @@ export default function InsurancePage() {
                 className="h-full rounded-full transition-all duration-500 flex items-center justify-end pr-2"
                 style={{
                   width: `${coveragePercent}%`,
-                  backgroundColor: coveragePercent >= 80 ? "#1D9E75" : coveragePercent >= 50 ? "#EF9F27" : "#E24B4A",
+                  backgroundColor: coveragePercent >= 80 ? "#3B7D62" : coveragePercent >= 50 ? "#B8922E" : "#B85450",
                   minWidth: totalCurrentCoverage > 0 ? "60px" : "0px",
                 }}
               >

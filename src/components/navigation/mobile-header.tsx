@@ -62,7 +62,7 @@ export function MobileHeader() {
       {open && (
         <div className="lg:hidden fixed inset-0 z-50 bg-black/50" onClick={() => setOpen(false)}>
           <div
-            className="absolute right-0 top-0 bottom-0 w-72 bg-navy text-white p-4 space-y-1 overflow-y-auto"
+            className="absolute right-0 top-0 bottom-0 w-72 bg-sidebar text-white p-4 space-y-1 overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-6 px-2">

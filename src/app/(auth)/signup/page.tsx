@@ -65,7 +65,7 @@ export default function SignupPage() {
               type="text"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              className="w-full px-3 py-2.5 bg-background border border-border rounded-lg text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-navy focus:border-transparent"
+              className="w-full px-3 py-2.5 bg-background border border-border rounded-lg text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               placeholder="Your name"
               required
             />
@@ -77,7 +77,7 @@ export default function SignupPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2.5 bg-background border border-border rounded-lg text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-navy focus:border-transparent"
+              className="w-full px-3 py-2.5 bg-background border border-border rounded-lg text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               placeholder="you@example.com"
               required
             />
@@ -90,7 +90,7 @@ export default function SignupPage() {
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-2.5 bg-background border border-border rounded-lg text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-navy focus:border-transparent pr-10"
+                className="w-full px-3 py-2.5 bg-background border border-border rounded-lg text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent pr-10"
                 placeholder="At least 6 characters"
                 minLength={6}
                 required
@@ -108,7 +108,7 @@ export default function SignupPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 bg-navy text-white font-medium rounded-lg hover:bg-navy-light transition disabled:opacity-50"
+            className="w-full py-2.5 bg-primary text-white font-medium rounded-lg hover:bg-primary-hover transition disabled:opacity-50"
           >
             {loading ? "Creating account..." : "Create Account"}
           </button>

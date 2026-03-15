@@ -40,7 +40,7 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="hidden lg:flex flex-col w-64 bg-navy text-white min-h-screen">
+    <aside className="hidden lg:flex flex-col w-64 bg-sidebar text-white min-h-screen">
       {/* Logo */}
       <div className="flex items-center gap-2 px-6 py-5 border-b border-white/10">
         <Shield className="w-7 h-7 text-teal" />

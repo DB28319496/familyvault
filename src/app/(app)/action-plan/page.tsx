@@ -33,14 +33,14 @@ const STATUS_CONFIG: Record<Status, { label: string; icon: typeof Circle; classN
 };
 
 const PHASE_COLORS: Record<number, string> = {
-  1: "#E24B4A",
-  2: "#EF9F27",
-  3: "#1D9E75",
-  4: "#2C5282",
+  1: "#B85450",
+  2: "#B8922E",
+  3: "#3B7D62",
+  4: "#456282",
 };
 
 const inputClass =
-  "bg-surface border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-navy/30 w-full";
+  "bg-surface border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 w-full";
 
 interface NewItemForm {
   title: string;
@@ -206,7 +206,7 @@ export default function ActionPlanPage() {
         </div>
         <button
           onClick={() => setShowAddForm(!showAddForm)}
-          className="flex items-center gap-2 bg-navy text-white px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition"
+          className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition"
         >
           <Plus className="w-4 h-4" />
           Add Task
@@ -275,7 +275,7 @@ export default function ActionPlanPage() {
             <button
               onClick={handleAddItem}
               disabled={!addForm.title.trim() || addingItem}
-              className="flex items-center gap-2 bg-navy text-white px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition disabled:opacity-50"
+              className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition disabled:opacity-50"
             >
               {addingItem ? "Adding..." : "Add Item"}
             </button>
@@ -410,9 +410,9 @@ export default function ActionPlanPage() {
                             style={{
                               backgroundColor:
                                 status === "complete"
-                                  ? "#1D9E75"
+                                  ? "#3B7D62"
                                   : status === "in_progress"
-                                  ? "#EF9F27"
+                                  ? "#B8922E"
                                   : `${color}40`,
                             }}
                           />
@@ -470,7 +470,7 @@ export default function ActionPlanPage() {
                                 <button
                                   onClick={() => saveEdit(item.id)}
                                   disabled={!editForm.title.trim() || savingEdit}
-                                  className="flex items-center gap-1.5 bg-navy text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:opacity-90 transition disabled:opacity-50"
+                                  className="flex items-center gap-1.5 bg-primary text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:opacity-90 transition disabled:opacity-50"
                                 >
                                   <Check className="w-3.5 h-3.5" />
                                   {savingEdit ? "Saving..." : "Save"}

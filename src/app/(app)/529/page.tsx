@@ -223,8 +223,8 @@ export default function FiveTwentyNinePage() {
                   value === "contributions" ? "Your Contributions" : "Investment Growth"
                 }
               />
-              <Bar dataKey="contributions" stackId="a" fill="#2C5282" radius={[0, 0, 0, 0]} />
-              <Bar dataKey="growth" stackId="a" fill="#1D9E75" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="contributions" stackId="a" fill="#456282" radius={[0, 0, 0, 0]} />
+              <Bar dataKey="growth" stackId="a" fill="#3B7D62" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

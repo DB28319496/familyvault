@@ -177,7 +177,7 @@ export default function BinderPage() {
                 className={cn(
                   "flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-t-lg transition-colors whitespace-nowrap",
                   isActive
-                    ? "bg-navy text-white"
+                    ? "bg-primary text-white"
                     : "text-muted-foreground hover:text-foreground hover:bg-surface-hover"
                 )}
               >
@@ -239,7 +239,7 @@ function AddButton({
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-navy rounded-lg hover:bg-navy/90 transition-colors"
+      className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-hover transition-colors"
     >
       <Plus className="w-4 h-4" />
       {label}
@@ -401,7 +401,7 @@ function ContactsTab() {
             <button
               onClick={handleAdd}
               disabled={!newContact.name.trim()}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-navy rounded-lg hover:bg-navy/90 transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
             >
               <Plus className="w-4 h-4" />
               Add
@@ -638,7 +638,7 @@ function LegalTab() {
             <button
               onClick={handleAdd}
               disabled={!newDoc.doc_type.trim()}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-navy rounded-lg hover:bg-navy/90 transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
             >
               <Plus className="w-4 h-4" />
               Add
@@ -694,7 +694,7 @@ function LegalTab() {
                   </button>
                   <button
                     onClick={() => saveEdit(doc.id)}
-                    className="flex items-center gap-2 px-4 py-1.5 text-sm font-medium text-white bg-navy rounded-lg hover:bg-navy/90 transition-colors"
+                    className="flex items-center gap-2 px-4 py-1.5 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-hover transition-colors"
                   >
                     <Save className="w-3.5 h-3.5" />
                     Save
@@ -971,7 +971,7 @@ function FinancialTab() {
             <button
               onClick={handleAdd}
               disabled={!newAccount.institution.trim()}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-navy rounded-lg hover:bg-navy/90 transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
             >
               <Plus className="w-4 h-4" />
               Add
@@ -1064,7 +1064,7 @@ function FinancialTab() {
                       </button>
                       <button
                         onClick={() => saveEdit(acct.id)}
-                        className="flex items-center gap-2 px-4 py-1.5 text-sm font-medium text-white bg-navy rounded-lg hover:bg-navy/90 transition-colors"
+                        className="flex items-center gap-2 px-4 py-1.5 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-hover transition-colors"
                       >
                         <Save className="w-3.5 h-3.5" />
                         Save
@@ -1360,7 +1360,7 @@ function InsuranceTab() {
             <button
               onClick={handleAdd}
               disabled={!newPolicy.policy_type.trim()}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-navy rounded-lg hover:bg-navy/90 transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
             >
               <Plus className="w-4 h-4" />
               Add
@@ -1500,7 +1500,7 @@ function InsuranceTab() {
                   </button>
                   <button
                     onClick={() => saveEdit(policy.id)}
-                    className="flex items-center gap-2 px-4 py-1.5 text-sm font-medium text-white bg-navy rounded-lg hover:bg-navy/90 transition-colors"
+                    className="flex items-center gap-2 px-4 py-1.5 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-hover transition-colors"
                   >
                     <Save className="w-3.5 h-3.5" />
                     Save
@@ -1763,7 +1763,7 @@ function BillsTab() {
             <button
               onClick={handleAdd}
               disabled={!newBill.name.trim()}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-navy rounded-lg hover:bg-navy/90 transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
             >
               <Plus className="w-4 h-4" />
               Add
@@ -1785,7 +1785,7 @@ function BillsTab() {
                 className={cn(
                   "relative aspect-square flex flex-col items-center justify-center rounded-lg text-xs transition-colors",
                   hasBills
-                    ? "bg-navy/10 dark:bg-navy/30 font-semibold text-navy dark:text-blue-300"
+                    ? "bg-navy/10 font-semibold text-navy"
                     : "bg-surface-hover/50 text-muted-foreground"
                 )}
                 title={
@@ -1800,7 +1800,7 @@ function BillsTab() {
                     {dayBills.map((b) => (
                       <div
                         key={b.id}
-                        className="w-1.5 h-1.5 rounded-full bg-navy dark:bg-blue-400"
+                        className="w-1.5 h-1.5 rounded-full bg-navy"
                       />
                     ))}
                   </div>
@@ -1878,7 +1878,7 @@ function BillsTab() {
                     </button>
                     <button
                       onClick={() => saveEdit(bill.id)}
-                      className="flex items-center gap-2 px-4 py-1.5 text-sm font-medium text-white bg-navy rounded-lg hover:bg-navy/90 transition-colors"
+                      className="flex items-center gap-2 px-4 py-1.5 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-hover transition-colors"
                     >
                       <Save className="w-3.5 h-3.5" />
                       Save
@@ -2105,7 +2105,7 @@ function DigitalTab() {
             <button
               onClick={handleAdd}
               disabled={!newItem.name.trim()}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-navy rounded-lg hover:bg-navy/90 transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
             >
               <Plus className="w-4 h-4" />
               Add
@@ -2173,7 +2173,7 @@ function DigitalTab() {
                         </button>
                         <button
                           onClick={() => saveEdit(item.id)}
-                          className="flex items-center gap-2 px-4 py-1.5 text-sm font-medium text-white bg-navy rounded-lg hover:bg-navy/90 transition-colors"
+                          className="flex items-center gap-2 px-4 py-1.5 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-hover transition-colors"
                         >
                           <Save className="w-3.5 h-3.5" />
                           Save
@@ -2317,7 +2317,7 @@ If you're reading this, it means I'm no longer able to be with you. I want you t
             )}
             <button
               onClick={handleSave}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-navy rounded-lg hover:bg-navy/90 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-hover transition-colors"
             >
               <Save className="w-4 h-4" />
               Save
