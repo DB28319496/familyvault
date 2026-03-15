@@ -10,6 +10,11 @@ import {
   StickyNote,
   ChevronDown,
   ChevronRight,
+  Plus,
+  Trash2,
+  Pencil,
+  X,
+  Check,
 } from "lucide-react";
 import { Card, CardTitle } from "@/components/ui/card";
 import { ProgressBar } from "@/components/ui/progress-bar";
@@ -34,29 +39,40 @@ const PHASE_COLORS: Record<number, string> = {
   4: "#2C5282",
 };
 
+const inputClass =
+  "bg-surface border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-navy/30 w-full";
+
+interface NewItemForm {
+  title: string;
+  description: string;
+  phase: number;
+  target_date: string;
+  notes: string;
+}
+
+const emptyForm: NewItemForm = {
+  title: "",
+  description: "",
+  phase: 1,
+  target_date: "",
+  notes: "",
+};
+
 export default function ActionPlanPage() {
-  const { data: items, loading, update } = useActionItems();
+  const { data: items, loading, update, insert, remove } = useActionItems();
   const [expandedPhases, setExpandedPhases] = useState<Set<number>>(new Set([1, 2, 3, 4]));
-
-  const togglePhase = (phase: number) => {
-    setExpandedPhases((prev) => {
-      const next = new Set(prev);
-      if (next.has(phase)) next.delete(phase);
-      else next.add(phase);
-      return next;
-    });
-  };
-
-  const cycleStatus = async (itemId: string) => {
-    const item = items.find((i) => i.id === itemId);
-    if (!item) return;
-    const currentIdx = STATUS_CYCLE.indexOf(item.status as Status);
-    const nextStatus = STATUS_CYCLE[(currentIdx + 1) % STATUS_CYCLE.length];
-    await update(itemId, {
-      status: nextStatus,
-      completed_date: nextStatus === "complete" ? new Date().toISOString().split("T")[0] : null,
-    });
-  };
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [addForm, setAddForm] = useState<NewItemForm>(emptyForm);
+  const [addingItem, setAddingItem] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<{
+    title: string;
+    description: string;
+    target_date: string;
+    notes: string;
+  }>({ title: "", description: "", target_date: "", notes: "" });
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const phases = [1, 2, 3, 4] as const;
 
@@ -99,13 +115,182 @@ export default function ActionPlanPage() {
     );
   }
 
+  const togglePhase = (phase: number) => {
+    setExpandedPhases((prev) => {
+      const next = new Set(prev);
+      if (next.has(phase)) next.delete(phase);
+      else next.add(phase);
+      return next;
+    });
+  };
+
+  const cycleStatus = async (itemId: string) => {
+    const item = items.find((i) => i.id === itemId);
+    if (!item) return;
+    const currentIdx = STATUS_CYCLE.indexOf(item.status as Status);
+    const nextStatus = STATUS_CYCLE[(currentIdx + 1) % STATUS_CYCLE.length];
+    await update(itemId, {
+      status: nextStatus,
+      completed_date: nextStatus === "complete" ? new Date().toISOString().split("T")[0] : null,
+    });
+  };
+
+  const handleAddItem = async () => {
+    if (!addForm.title.trim()) return;
+    setAddingItem(true);
+    try {
+      await insert({
+        title: addForm.title.trim(),
+        description: addForm.description.trim() || null,
+        phase: addForm.phase,
+        status: "not_started" as const,
+        target_date: addForm.target_date || null,
+        notes: addForm.notes.trim() || null,
+        sort_order: phaseItems[addForm.phase].length,
+      });
+      setAddForm(emptyForm);
+      setShowAddForm(false);
+      // Make sure the phase is expanded so user sees the new item
+      setExpandedPhases((prev) => new Set([...prev, addForm.phase]));
+    } finally {
+      setAddingItem(false);
+    }
+  };
+
+  const startEditing = (item: ActionItem) => {
+    setEditingId(item.id);
+    setEditForm({
+      title: item.title,
+      description: item.description || "",
+      target_date: item.target_date || "",
+      notes: item.notes || "",
+    });
+  };
+
+  const cancelEditing = () => {
+    setEditingId(null);
+  };
+
+  const saveEdit = async (itemId: string) => {
+    if (!editForm.title.trim()) return;
+    setSavingEdit(true);
+    try {
+      await update(itemId, {
+        title: editForm.title.trim(),
+        description: editForm.description.trim() || null,
+        target_date: editForm.target_date || null,
+        notes: editForm.notes.trim() || null,
+      });
+      setEditingId(null);
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
+  const handleDelete = async (itemId: string) => {
+    setDeletingId(itemId);
+    try {
+      await remove(itemId);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Page header */}
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Action Plan</h1>
-        <p className="text-muted-foreground text-sm mt-1">Your financial roadmap — phase by phase</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Action Plan</h1>
+          <p className="text-muted-foreground text-sm mt-1">Your financial roadmap — phase by phase</p>
+        </div>
+        <button
+          onClick={() => setShowAddForm(!showAddForm)}
+          className="flex items-center gap-2 bg-navy text-white px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition"
+        >
+          <Plus className="w-4 h-4" />
+          Add Task
+        </button>
       </div>
+
+      {/* Add task form */}
+      {showAddForm && (
+        <Card>
+          <CardTitle>New Action Item</CardTitle>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <div className="md:col-span-2">
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Title *</label>
+              <input
+                type="text"
+                placeholder="e.g., Set up emergency fund"
+                value={addForm.title}
+                onChange={(e) => setAddForm((f) => ({ ...f, title: e.target.value }))}
+                className={inputClass}
+              />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Description</label>
+              <input
+                type="text"
+                placeholder="Optional details..."
+                value={addForm.description}
+                onChange={(e) => setAddForm((f) => ({ ...f, description: e.target.value }))}
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Phase</label>
+              <select
+                value={addForm.phase}
+                onChange={(e) => setAddForm((f) => ({ ...f, phase: Number(e.target.value) }))}
+                className={inputClass}
+              >
+                <option value={1}>Phase 1 — {getPhaseLabel(1)}</option>
+                <option value={2}>Phase 2 — {getPhaseLabel(2)}</option>
+                <option value={3}>Phase 3 — {getPhaseLabel(3)}</option>
+                <option value={4}>Phase 4 — {getPhaseLabel(4)}</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Target Date</label>
+              <input
+                type="date"
+                value={addForm.target_date}
+                onChange={(e) => setAddForm((f) => ({ ...f, target_date: e.target.value }))}
+                className={inputClass}
+              />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Notes</label>
+              <input
+                type="text"
+                placeholder="Any additional notes..."
+                value={addForm.notes}
+                onChange={(e) => setAddForm((f) => ({ ...f, notes: e.target.value }))}
+                className={inputClass}
+              />
+            </div>
+          </div>
+          <div className="flex items-center gap-3 mt-4">
+            <button
+              onClick={handleAddItem}
+              disabled={!addForm.title.trim() || addingItem}
+              className="flex items-center gap-2 bg-navy text-white px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition disabled:opacity-50"
+            >
+              {addingItem ? "Adding..." : "Add Item"}
+            </button>
+            <button
+              onClick={() => {
+                setShowAddForm(false);
+                setAddForm(emptyForm);
+              }}
+              className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground transition"
+            >
+              Cancel
+            </button>
+          </div>
+        </Card>
+      )}
 
       {/* Overall progress */}
       <Card>
@@ -198,16 +383,23 @@ export default function ActionPlanPage() {
               {/* Action items */}
               {isExpanded && (
                 <div className="border-t border-border">
+                  {phaseItems[phase].length === 0 && (
+                    <div className="p-5 text-sm text-muted-foreground text-center">
+                      No action items in this phase yet.
+                    </div>
+                  )}
                   {phaseItems[phase].map((item, idx) => {
                     const status = item.status as Status;
                     const config = STATUS_CONFIG[status];
                     const StatusIcon = config.icon;
+                    const isEditing = editingId === item.id;
+                    const isDeleting = deletingId === item.id;
 
                     return (
                       <div
                         key={item.id}
                         className={cn(
-                          "flex items-start gap-4 p-5",
+                          "group flex items-start gap-4 p-5",
                           idx < phaseItems[phase].length - 1 && "border-b border-border"
                         )}
                       >
@@ -231,56 +423,143 @@ export default function ActionPlanPage() {
 
                         {/* Content */}
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-3">
-                            <div>
-                              <p
-                                className={cn(
-                                  "font-medium text-foreground",
-                                  status === "complete" && "line-through text-muted-foreground"
-                                )}
-                              >
-                                {item.title}
-                              </p>
-                              {item.description && (
-                                <p className="text-sm text-muted-foreground mt-0.5">{item.description}</p>
-                              )}
+                          {isEditing ? (
+                            /* Edit mode */
+                            <div className="space-y-3">
+                              <div>
+                                <label className="block text-xs font-medium text-muted-foreground mb-1">Title</label>
+                                <input
+                                  type="text"
+                                  value={editForm.title}
+                                  onChange={(e) => setEditForm((f) => ({ ...f, title: e.target.value }))}
+                                  className={inputClass}
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-muted-foreground mb-1">Description</label>
+                                <input
+                                  type="text"
+                                  value={editForm.description}
+                                  onChange={(e) => setEditForm((f) => ({ ...f, description: e.target.value }))}
+                                  placeholder="Optional description..."
+                                  className={inputClass}
+                                />
+                              </div>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div>
+                                  <label className="block text-xs font-medium text-muted-foreground mb-1">Target Date</label>
+                                  <input
+                                    type="date"
+                                    value={editForm.target_date}
+                                    onChange={(e) => setEditForm((f) => ({ ...f, target_date: e.target.value }))}
+                                    className={inputClass}
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-xs font-medium text-muted-foreground mb-1">Notes</label>
+                                  <input
+                                    type="text"
+                                    value={editForm.notes}
+                                    onChange={(e) => setEditForm((f) => ({ ...f, notes: e.target.value }))}
+                                    placeholder="Optional notes..."
+                                    className={inputClass}
+                                  />
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => saveEdit(item.id)}
+                                  disabled={!editForm.title.trim() || savingEdit}
+                                  className="flex items-center gap-1.5 bg-navy text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:opacity-90 transition disabled:opacity-50"
+                                >
+                                  <Check className="w-3.5 h-3.5" />
+                                  {savingEdit ? "Saving..." : "Save"}
+                                </button>
+                                <button
+                                  onClick={cancelEditing}
+                                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground transition"
+                                >
+                                  <X className="w-3.5 h-3.5" />
+                                  Cancel
+                                </button>
+                              </div>
                             </div>
+                          ) : (
+                            /* View mode */
+                            <>
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="flex-1 min-w-0">
+                                  <p
+                                    className={cn(
+                                      "font-medium text-foreground",
+                                      status === "complete" && "line-through text-muted-foreground"
+                                    )}
+                                  >
+                                    {item.title}
+                                  </p>
+                                  {item.description && (
+                                    <p className="text-sm text-muted-foreground mt-0.5">{item.description}</p>
+                                  )}
+                                </div>
 
-                            {/* Status badge */}
-                            <button
-                              onClick={() => cycleStatus(item.id)}
-                              className={cn(
-                                "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium shrink-0 transition hover:opacity-80",
-                                config.className
-                              )}
-                            >
-                              <StatusIcon className="w-3.5 h-3.5" />
-                              {config.label}
-                            </button>
-                          </div>
+                                <div className="flex items-center gap-2 shrink-0">
+                                  {/* Edit button */}
+                                  <button
+                                    onClick={() => startEditing(item)}
+                                    className="opacity-0 group-hover:opacity-100 p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-hover transition"
+                                    title="Edit item"
+                                  >
+                                    <Pencil className="w-3.5 h-3.5" />
+                                  </button>
 
-                          {/* Meta row */}
-                          <div className="flex items-center gap-4 mt-2">
-                            {item.target_date && (
-                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                <CalendarDays className="w-3.5 h-3.5" />
-                                <span>
-                                  Target:{" "}
-                                  {new Date(item.target_date).toLocaleDateString("en-US", {
-                                    month: "short",
-                                    day: "numeric",
-                                    year: "numeric",
-                                  })}
-                                </span>
+                                  {/* Delete button */}
+                                  <button
+                                    onClick={() => handleDelete(item.id)}
+                                    disabled={isDeleting}
+                                    className="opacity-0 group-hover:opacity-100 p-1.5 rounded-md text-muted-foreground hover:text-coral hover:bg-coral/10 transition disabled:opacity-50"
+                                    title="Delete item"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+
+                                  {/* Status badge */}
+                                  <button
+                                    onClick={() => cycleStatus(item.id)}
+                                    className={cn(
+                                      "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium shrink-0 transition hover:opacity-80",
+                                      config.className
+                                    )}
+                                  >
+                                    <StatusIcon className="w-3.5 h-3.5" />
+                                    {config.label}
+                                  </button>
+                                </div>
                               </div>
-                            )}
-                            {item.notes && (
-                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                <StickyNote className="w-3.5 h-3.5" />
-                                <span>{item.notes}</span>
+
+                              {/* Meta row */}
+                              <div className="flex items-center gap-4 mt-2">
+                                {item.target_date && (
+                                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                    <CalendarDays className="w-3.5 h-3.5" />
+                                    <span>
+                                      Target:{" "}
+                                      {new Date(item.target_date).toLocaleDateString("en-US", {
+                                        month: "short",
+                                        day: "numeric",
+                                        year: "numeric",
+                                      })}
+                                    </span>
+                                  </div>
+                                )}
+                                {item.notes && (
+                                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                    <StickyNote className="w-3.5 h-3.5" />
+                                    <span>{item.notes}</span>
+                                  </div>
+                                )}
                               </div>
-                            )}
-                          </div>
+                            </>
+                          )}
                         </div>
                       </div>
                     );

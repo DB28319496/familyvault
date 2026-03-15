@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   PieChart,
   Pie,
@@ -21,6 +21,10 @@ import {
   PiggyBank,
   AlertTriangle,
   CheckCircle2,
+  Plus,
+  Trash2,
+  Pencil,
+  X,
 } from "lucide-react";
 import { Card, CardTitle } from "@/components/ui/card";
 import { ProgressBar } from "@/components/ui/progress-bar";
@@ -74,10 +78,43 @@ const CATEGORY_COLORS = [
   "#334155",
 ];
 
+const inputClasses =
+  "bg-surface border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-navy/30 w-full";
+
 export default function BudgetPage() {
-  const { data: categories, loading: categoriesLoading } = useBudgetCategories();
-  const { data: expenses, loading: expensesLoading } = useExpenses();
+  const {
+    data: categories,
+    loading: categoriesLoading,
+    insert: insertCategory,
+    update: updateCategory,
+    remove: removeCategory,
+    setData: setCategories,
+  } = useBudgetCategories();
+  const {
+    data: expenses,
+    loading: expensesLoading,
+    insert: insertExpense,
+    update: updateExpense,
+    remove: removeExpense,
+  } = useExpenses();
   const { monthlyIncome: MONTHLY_INCOME, loading: profileLoading } = useProfile();
+
+  // All state hooks called before any early return
+  const [showCategoryForm, setShowCategoryForm] = useState(false);
+  const [catName, setCatName] = useState("");
+  const [catTarget, setCatTarget] = useState("");
+  const [catGroup, setCatGroup] = useState("essentials");
+  const [catSaving, setCatSaving] = useState(false);
+
+  const [editingCatId, setEditingCatId] = useState<string | null>(null);
+  const [editTarget, setEditTarget] = useState("");
+
+  const [showExpenseForm, setShowExpenseForm] = useState(false);
+  const [expAmount, setExpAmount] = useState("");
+  const [expCategoryId, setExpCategoryId] = useState("");
+  const [expDescription, setExpDescription] = useState("");
+  const [expDate, setExpDate] = useState(new Date().toISOString().slice(0, 10));
+  const [expSaving, setExpSaving] = useState(false);
 
   const loading = categoriesLoading || expensesLoading || profileLoading;
 
@@ -166,6 +203,88 @@ export default function BudgetPage() {
 
   const overBudgetCount = enrichedCategories.filter((c) => c.overBudget).length;
 
+  // Recent expenses enriched with category name
+  const recentExpenses = useMemo(() => {
+    const catMap: Record<string, string> = {};
+    for (const cat of categories) {
+      catMap[cat.id] = cat.name;
+    }
+    return expenses.slice(0, 20).map((exp) => ({
+      ...exp,
+      categoryName: catMap[exp.category_id] ?? "Unknown",
+    }));
+  }, [expenses, categories]);
+
+  // Handlers
+  const handleAddCategory = async () => {
+    if (!catName.trim() || !catTarget) return;
+    setCatSaving(true);
+    try {
+      await insertCategory({
+        name: catName.trim(),
+        target_amount: parseFloat(catTarget),
+        category_group: catGroup,
+      });
+      setCatName("");
+      setCatTarget("");
+      setCatGroup("essentials");
+      setShowCategoryForm(false);
+    } catch (err) {
+      console.error("Failed to add category:", err);
+    } finally {
+      setCatSaving(false);
+    }
+  };
+
+  const handleUpdateTarget = async (id: string) => {
+    if (!editTarget) return;
+    try {
+      await updateCategory(id, { target_amount: parseFloat(editTarget) });
+      setEditingCatId(null);
+      setEditTarget("");
+    } catch (err) {
+      console.error("Failed to update target:", err);
+    }
+  };
+
+  const handleDeleteCategory = async (id: string) => {
+    try {
+      await removeCategory(id);
+    } catch (err) {
+      console.error("Failed to delete category:", err);
+    }
+  };
+
+  const handleAddExpense = async () => {
+    if (!expAmount || !expCategoryId) return;
+    setExpSaving(true);
+    try {
+      await insertExpense({
+        amount: parseFloat(expAmount),
+        category_id: expCategoryId,
+        description: expDescription.trim() || null,
+        date: expDate,
+      });
+      setExpAmount("");
+      setExpCategoryId("");
+      setExpDescription("");
+      setExpDate(new Date().toISOString().slice(0, 10));
+      setShowExpenseForm(false);
+    } catch (err) {
+      console.error("Failed to add expense:", err);
+    } finally {
+      setExpSaving(false);
+    }
+  };
+
+  const handleDeleteExpense = async (id: string) => {
+    try {
+      await removeExpense(id);
+    } catch (err) {
+      console.error("Failed to delete expense:", err);
+    }
+  };
+
   if (loading) {
     return (
       <div className="space-y-6 max-w-7xl mx-auto">
@@ -187,12 +306,143 @@ export default function BudgetPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Monthly Budget</h1>
-        <p className="text-muted-foreground text-sm mt-1">
-          March 2026 &middot; Track spending against your plan
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Monthly Budget</h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            March 2026 &middot; Track spending against your plan
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowExpenseForm(!showExpenseForm)}
+            className="flex items-center gap-1.5 bg-teal text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-teal/90 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Add Expense
+          </button>
+          <button
+            onClick={() => setShowCategoryForm(!showCategoryForm)}
+            className="flex items-center gap-1.5 bg-navy text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-navy/90 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Add Category
+          </button>
+        </div>
       </div>
+
+      {/* Add Category inline form */}
+      {showCategoryForm && (
+        <Card className="border-navy/20">
+          <div className="flex items-center justify-between mb-3">
+            <CardTitle className="mb-0">New Budget Category</CardTitle>
+            <button
+              onClick={() => setShowCategoryForm(false)}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="grid sm:grid-cols-3 gap-3">
+            <input
+              type="text"
+              placeholder="Category name"
+              value={catName}
+              onChange={(e) => setCatName(e.target.value)}
+              className={inputClasses}
+            />
+            <input
+              type="number"
+              placeholder="Target amount"
+              value={catTarget}
+              onChange={(e) => setCatTarget(e.target.value)}
+              className={inputClasses}
+              min="0"
+              step="0.01"
+            />
+            <select
+              value={catGroup}
+              onChange={(e) => setCatGroup(e.target.value)}
+              className={inputClasses}
+            >
+              {GROUP_ORDER.map((group) => (
+                <option key={group} value={group}>
+                  {GROUP_LABELS[group]}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex justify-end mt-3">
+            <button
+              onClick={handleAddCategory}
+              disabled={catSaving || !catName.trim() || !catTarget}
+              className="bg-navy text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-navy/90 transition-colors disabled:opacity-50"
+            >
+              {catSaving ? "Saving..." : "Add Category"}
+            </button>
+          </div>
+        </Card>
+      )}
+
+      {/* Add Expense inline form */}
+      {showExpenseForm && (
+        <Card className="border-teal/20">
+          <div className="flex items-center justify-between mb-3">
+            <CardTitle className="mb-0">New Expense</CardTitle>
+            <button
+              onClick={() => setShowExpenseForm(false)}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <input
+              type="number"
+              placeholder="Amount"
+              value={expAmount}
+              onChange={(e) => setExpAmount(e.target.value)}
+              className={inputClasses}
+              min="0"
+              step="0.01"
+            />
+            <select
+              value={expCategoryId}
+              onChange={(e) => setExpCategoryId(e.target.value)}
+              className={inputClasses}
+            >
+              <option value="">Select category</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
+            <input
+              type="text"
+              placeholder="Description (optional)"
+              value={expDescription}
+              onChange={(e) => setExpDescription(e.target.value)}
+              className={inputClasses}
+            />
+            <input
+              type="date"
+              value={expDate}
+              onChange={(e) => setExpDate(e.target.value)}
+              className={inputClasses}
+            />
+          </div>
+          <div className="flex justify-end mt-3">
+            <button
+              onClick={handleAddExpense}
+              disabled={expSaving || !expAmount || !expCategoryId}
+              className="bg-teal text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-teal/90 transition-colors disabled:opacity-50"
+            >
+              {expSaving ? "Saving..." : "Add Expense"}
+            </button>
+          </div>
+        </Card>
+      )}
 
       {/* Top summary cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -401,8 +651,8 @@ export default function BudgetPage() {
               </div>
 
               <div className="space-y-4">
-                {cats.map((cat, idx) => (
-                  <div key={cat.id}>
+                {cats.map((cat) => (
+                  <div key={cat.id} className="group">
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-sm text-foreground">
                         {cat.name}
@@ -415,15 +665,73 @@ export default function BudgetPage() {
                         >
                           {formatCurrency(cat.actual)}
                         </span>
-                        <span className="text-xs text-muted-foreground">
-                          / {formatCurrency(cat.target)}
-                        </span>
+
+                        {/* Editable target */}
+                        {editingCatId === cat.id ? (
+                          <span className="flex items-center gap-1">
+                            <span className="text-xs text-muted-foreground">/</span>
+                            <input
+                              type="number"
+                              value={editTarget}
+                              onChange={(e) => setEditTarget(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") handleUpdateTarget(cat.id);
+                                if (e.key === "Escape") {
+                                  setEditingCatId(null);
+                                  setEditTarget("");
+                                }
+                              }}
+                              className="w-24 bg-surface border border-border rounded px-2 py-0.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-navy/30"
+                              autoFocus
+                              min="0"
+                              step="0.01"
+                            />
+                            <button
+                              onClick={() => handleUpdateTarget(cat.id)}
+                              className="text-teal hover:text-teal/80"
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => {
+                                setEditingCatId(null);
+                                setEditTarget("");
+                              }}
+                              className="text-muted-foreground hover:text-foreground"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </span>
+                        ) : (
+                          <button
+                            onClick={() => {
+                              setEditingCatId(cat.id);
+                              setEditTarget(String(cat.target));
+                            }}
+                            className="flex items-center gap-1 cursor-pointer"
+                          >
+                            <span className="text-xs text-muted-foreground">
+                              / {formatCurrency(cat.target)}
+                            </span>
+                            <Pencil className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </button>
+                        )}
+
                         {cat.overBudget && (
                           <AlertTriangle className="w-3.5 h-3.5 text-coral" />
                         )}
                         {cat.actual > 0 && !cat.overBudget && cat.pct >= 100 && (
                           <CheckCircle2 className="w-3.5 h-3.5 text-teal" />
                         )}
+
+                        {/* Delete category */}
+                        <button
+                          onClick={() => handleDeleteCategory(cat.id)}
+                          className="text-coral opacity-0 group-hover:opacity-100 transition-opacity hover:text-coral/80"
+                          title="Delete category"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     </div>
                     <ProgressBar
@@ -442,6 +750,65 @@ export default function BudgetPage() {
           );
         })}
       </div>
+
+      {/* Recent Expenses */}
+      <Card>
+        <div className="flex items-center justify-between mb-4">
+          <CardTitle className="mb-0">Recent Expenses</CardTitle>
+          <button
+            onClick={() => setShowExpenseForm(true)}
+            className="flex items-center gap-1.5 text-sm text-teal hover:text-teal/80 font-medium transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Add
+          </button>
+        </div>
+        {recentExpenses.length === 0 ? (
+          <p className="text-sm text-muted-foreground text-center py-6">
+            No expenses recorded yet.
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {recentExpenses.map((exp) => (
+              <div
+                key={exp.id}
+                className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-surface-hover transition-colors group"
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-foreground">
+                      {formatCurrency(exp.amount)}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {exp.categoryName}
+                    </span>
+                  </div>
+                  {exp.description && (
+                    <p className="text-xs text-muted-foreground truncate mt-0.5">
+                      {exp.description}
+                    </p>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 shrink-0 ml-3">
+                  <span className="text-xs text-muted-foreground">
+                    {new Date(exp.date).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </span>
+                  <button
+                    onClick={() => handleDeleteExpense(exp.id)}
+                    className="text-coral opacity-0 group-hover:opacity-100 transition-opacity hover:text-coral/80"
+                    title="Delete expense"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
 
       {/* Monthly cash flow summary */}
       <Card>
