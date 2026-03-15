@@ -7,7 +7,7 @@ import {
   FolderLock,
   ListChecks,
   ShieldCheck,
-  GraduationCap,
+  BookOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -16,7 +16,7 @@ const mobileNavItems = [
   { href: "/binder", label: "Binder", icon: FolderLock },
   { href: "/action-plan", label: "Plan", icon: ListChecks },
   { href: "/insurance", label: "Insurance", icon: ShieldCheck },
-  { href: "/529", label: "529", icon: GraduationCap },
+  { href: "/guide", label: "Guide", icon: BookOpen },
 ];
 
 export function MobileNav() {

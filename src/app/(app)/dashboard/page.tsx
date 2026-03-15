@@ -14,6 +14,7 @@ import {
   Users,
   KeyRound,
   Receipt,
+  BookOpen,
 } from "lucide-react";
 import { Card, CardTitle } from "@/components/ui/card";
 import { ProgressBar } from "@/components/ui/progress-bar";
@@ -99,6 +100,7 @@ export default function DashboardPage() {
     { href: "/action-plan", label: "Action Plan", icon: ListChecks, color: "text-teal" },
     { href: "/529", label: "529 Calculator", icon: GraduationCap, color: "text-navy-light" },
     { href: "/insurance", label: "Insurance Gap", icon: ShieldCheck, color: "text-coral" },
+    { href: "/guide", label: "How It Works", icon: BookOpen, color: "text-amber" },
   ];
 
   return (

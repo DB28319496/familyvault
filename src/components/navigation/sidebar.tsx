@@ -10,6 +10,7 @@ import {
   GraduationCap,
   ShieldCheck,
   Settings,
+  BookOpen,
   Moon,
   Sun,
   LogOut,
@@ -23,6 +24,7 @@ const navItems = [
   { href: "/action-plan", label: "Action Plan", icon: ListChecks },
   { href: "/529", label: "529 Calculator", icon: GraduationCap },
   { href: "/insurance", label: "Insurance Gap", icon: ShieldCheck },
+  { href: "/guide", label: "Guide", icon: BookOpen },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
