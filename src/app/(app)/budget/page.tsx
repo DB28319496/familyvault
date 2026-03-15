@@ -518,7 +518,7 @@ export default function BudgetPage() {
         {/* Donut — Budget Allocation */}
         <Card>
           <CardTitle>Budget Allocation</CardTitle>
-          <div className="mt-4 h-72 flex items-center">
+          <div className="mt-4 h-72">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
