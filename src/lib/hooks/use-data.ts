@@ -27,12 +27,16 @@ function useSupabaseTable<T>(
   const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Stabilize orderBy to prevent infinite re-render loops
+  const orderColumn = orderBy?.column;
+  const orderAscending = orderBy?.ascending ?? true;
+
   const fetchData = useCallback(async () => {
     try {
       const supabase = createClient();
       let query = supabase.from(table).select("*");
-      if (orderBy) {
-        query = query.order(orderBy.column, { ascending: orderBy.ascending ?? true });
+      if (orderColumn) {
+        query = query.order(orderColumn, { ascending: orderAscending });
       }
       const { data: rows, error } = await query;
       if (error) throw error;
@@ -42,7 +46,7 @@ function useSupabaseTable<T>(
     } finally {
       setLoading(false);
     }
-  }, [table, orderBy]);
+  }, [table, orderColumn, orderAscending]);
 
   useEffect(() => {
     fetchData();
@@ -50,13 +54,10 @@ function useSupabaseTable<T>(
 
   const insert = async (item: Partial<T>) => {
     const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    // Get household_id from profile
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("household_id")
-      .eq("id", user?.id)
-      .single();
+    const [{ data: { user } }, { data: profile }] = await Promise.all([
+      supabase.auth.getUser(),
+      supabase.from("profiles").select("household_id").limit(1).single(),
+    ]);
     const { data: row, error } = await supabase
       .from(table)
       .insert({ ...item, user_id: user?.id, household_id: profile?.household_id })
@@ -68,19 +69,28 @@ function useSupabaseTable<T>(
   };
 
   const update = async (id: string, updates: Partial<T>) => {
-    const supabase = createClient();
-    const { error } = await supabase.from(table).update(updates).eq("id", id);
-    if (error) throw error;
+    // Optimistic update first for snappy UI
     setData((prev) =>
       prev.map((item) => ((item as Record<string, unknown>).id === id ? { ...item, ...updates } : item))
     );
+    const supabase = createClient();
+    const { error } = await supabase.from(table).update(updates).eq("id", id);
+    if (error) {
+      // Revert on error
+      fetchData();
+      throw error;
+    }
   };
 
   const remove = async (id: string) => {
+    // Optimistic delete
+    setData((prev) => prev.filter((item) => (item as Record<string, unknown>).id !== id));
     const supabase = createClient();
     const { error } = await supabase.from(table).delete().eq("id", id);
-    if (error) throw error;
-    setData((prev) => prev.filter((item) => (item as Record<string, unknown>).id !== id));
+    if (error) {
+      fetchData();
+      throw error;
+    }
   };
 
   return { data, loading, refetch: fetchData, insert, update, remove, setData };
