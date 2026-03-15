@@ -40,8 +40,10 @@ export function MobileHeader() {
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
 
-  const handleSignOut = () => {
-    localStorage.removeItem("fv-demo-mode");
+  const handleSignOut = async () => {
+    const { createClient } = await import("@/lib/supabase/client");
+    const supabase = createClient();
+    await supabase.auth.signOut();
     window.location.href = "/login";
   };
 

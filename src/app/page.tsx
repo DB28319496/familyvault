@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Shield, TrendingUp, Baby, FileText, Target, ArrowRight } from "lucide-react";
-import { DemoButton } from "@/components/demo-button";
 
 export default function LandingPage() {
   return (
@@ -39,16 +38,13 @@ export default function LandingPage() {
           and legacy management. Track debt payoff, build your emergency binder,
           and plan for every milestone.
         </p>
-        <div className="flex flex-col sm:flex-row items-center gap-4">
-          <Link
-            href="/signup"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-teal text-white font-semibold rounded-xl hover:bg-teal-light transition text-lg"
-          >
-            Start Protecting Your Family
-            <ArrowRight className="w-5 h-5" />
-          </Link>
-          <DemoButton className="px-8 py-4 bg-white/10 text-white font-semibold rounded-xl hover:bg-white/20 transition text-lg border border-white/20" />
-        </div>
+        <Link
+          href="/signup"
+          className="inline-flex items-center gap-2 px-8 py-4 bg-teal text-white font-semibold rounded-xl hover:bg-teal-light transition text-lg"
+        >
+          Start Protecting Your Family
+          <ArrowRight className="w-5 h-5" />
+        </Link>
       </section>
 
       {/* Features */}

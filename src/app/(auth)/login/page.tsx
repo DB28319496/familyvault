@@ -19,16 +19,6 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
 
-    // Check if Supabase is configured
-    if (
-      !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-      process.env.NEXT_PUBLIC_SUPABASE_URL.includes("placeholder")
-    ) {
-      localStorage.setItem("fv-demo-mode", "true");
-      router.push("/dashboard");
-      return;
-    }
-
     try {
       const supabase = createClient();
       const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -39,16 +29,10 @@ export default function LoginPage() {
         router.refresh();
       }
     } catch {
-      setError("Supabase is not configured. Use Demo Mode instead.");
+      setError("An unexpected error occurred");
     } finally {
       setLoading(false);
     }
-  };
-
-  // Demo mode — skip auth
-  const handleDemoMode = () => {
-    localStorage.setItem("fv-demo-mode", "true");
-    router.push("/dashboard");
   };
 
   return (
@@ -109,15 +93,6 @@ export default function LoginPage() {
             {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
-
-        <div className="mt-4">
-          <button
-            onClick={handleDemoMode}
-            className="w-full py-2.5 bg-teal/10 text-teal font-medium rounded-lg hover:bg-teal/20 transition border border-teal/20"
-          >
-            Try Demo Mode (No Account Needed)
-          </button>
-        </div>
 
         <p className="text-center text-sm text-muted-foreground mt-6">
           Don&apos;t have an account?{" "}

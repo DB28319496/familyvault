@@ -20,16 +20,6 @@ export default function SignupPage() {
     setError("");
     setLoading(true);
 
-    // Check if Supabase is configured
-    if (
-      !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-      process.env.NEXT_PUBLIC_SUPABASE_URL.includes("placeholder")
-    ) {
-      localStorage.setItem("fv-demo-mode", "true");
-      router.push("/dashboard");
-      return;
-    }
-
     try {
       const supabase = createClient();
       const { error } = await supabase.auth.signUp({
@@ -46,7 +36,7 @@ export default function SignupPage() {
         router.refresh();
       }
     } catch {
-      setError("Supabase is not configured. Use Demo Mode instead.");
+      setError("An unexpected error occurred");
     } finally {
       setLoading(false);
     }
