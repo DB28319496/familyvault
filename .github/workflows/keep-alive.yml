@@ -20,10 +20,15 @@ jobs:
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
           status=$(curl -s -o /dev/null -w "%{http_code}" \
+            --retry 5 --retry-all-errors --retry-delay 10 --max-time 30 \
             "${SUPABASE_URL}/rest/v1/profiles?select=id&limit=1" \
             -H "apikey: ${SUPABASE_ANON_KEY}" \
-            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}")
-          echo "Supabase responded with HTTP $status"
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}") || true
+          echo "Supabase responded with HTTP ${status:-000}"
+          if [ "${status:-000}" = "000" ]; then
+            echo "::error::Could not reach Supabase (DNS/connection failed). Is the project paused?"
+            exit 1
+          fi
           if [ "$status" -lt 200 ] || [ "$status" -ge 400 ]; then
             echo "::error::Keep-alive query failed (HTTP $status)"
             exit 1
