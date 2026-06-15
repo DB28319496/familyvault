@@ -6,16 +6,16 @@ import {
   LayoutDashboard,
   FolderLock,
   ListChecks,
-  ShieldCheck,
+  Sparkles,
   BookOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const mobileNavItems = [
   { href: "/dashboard", label: "Home", icon: LayoutDashboard },
+  { href: "/assistant", label: "Assistant", icon: Sparkles },
   { href: "/binder", label: "Binder", icon: FolderLock },
   { href: "/action-plan", label: "Plan", icon: ListChecks },
-  { href: "/insurance", label: "Insurance", icon: ShieldCheck },
   { href: "/guide", label: "Guide", icon: BookOpen },
 ];
 

@@ -11,6 +11,7 @@ import {
   ShieldCheck,
   Settings,
   BookOpen,
+  Sparkles,
   Moon,
   Sun,
   LogOut,
@@ -20,6 +21,7 @@ import { useTheme } from "@/lib/theme-provider";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/assistant", label: "Vault Assistant", icon: Sparkles },
   { href: "/binder", label: "Emergency Binder", icon: FolderLock },
   { href: "/action-plan", label: "Action Plan", icon: ListChecks },
   { href: "/529", label: "529 Calculator", icon: GraduationCap },
